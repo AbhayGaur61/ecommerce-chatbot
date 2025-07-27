@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # Database Service
+  db:
+    image: postgres:13
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 'Abra@6161' # <-- EDIT THIS with your actual password
+      POSTGRES_DB: chatbot_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Backend Service (Secure Version)
+  backend:
+    build: ./backend
+    container_name: fast_api_backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    env_file:
+      - ./backend/.env
+    environment:
+      # This URI points to the 'db' service and uses the variable from the .env file
+      DATABASE_URI: postgresql://postgres:${DB_PASSWORD}@db:5432/chatbot_db
+
+  # Frontend Service
+  frontend:
+    build: ./react-frontend
+    container_name: react_frontend
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:
